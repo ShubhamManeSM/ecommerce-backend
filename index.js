@@ -148,39 +148,46 @@ app.get("/api/categories/:categoryId", async (req, res) => {
 
 async function getWishlist() {
   let wishlist = await Wishlist.findOne();
-  if (!wishlist) wishlist = new Wishlist({ products: [] });
+  if (!wishlist) {
+    wishlist = new Wishlist({ products: [] });
+    await wishlist.save();
+  }
   return wishlist;
 }
 
 app.get("/api/wishlist", async (req, res) => {
-  const wishlist = await getWishlist();
-  res.json(wishlist);
+  try {
+    const wishlist = await getWishlist();
+    res.json(wishlist);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch wishlist" });
+  }
 });
 
 
 // ADD TO WISHLIST
-async function addToWishlist(productId) {
-  let wishlist = await getWishlist();
-  wishlist.products.push(productId);
-  return await wishlist.save();
-}
-
 app.post("/api/wishlist/:productId", async (req, res) => {
-  const wishlist = await addToWishlist(req.params.productId);
-  res.json(wishlist);
+  try {
+    let wishlist = await getWishlist();
+    wishlist.products.push(req.params.productId);
+    const saved = await wishlist.save();
+    res.json(saved);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to add to wishlist" });
+  }
 });
 
 
 // REMOVE FROM WISHLIST
-async function removeFromWishlist(productId) {
-  let wishlist = await getWishlist();
-  wishlist.products = wishlist.products.filter(id => id !== productId);
-  return await wishlist.save();
-}
-
 app.delete("/api/wishlist/:productId", async (req, res) => {
-  const wishlist = await removeFromWishlist(req.params.productId);
-  res.json(wishlist);
+  try {
+    let wishlist = await getWishlist();
+    wishlist.products = wishlist.products.filter(id => id !== req.params.productId);
+    const saved = await wishlist.save();
+    res.json(saved);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to remove from wishlist" });
+  }
 });
 
 
@@ -188,62 +195,69 @@ app.delete("/api/wishlist/:productId", async (req, res) => {
 
 async function getCart() {
   let cart = await Cart.findOne();
-  if (!cart) cart = new Cart({ items: [] });
+  if (!cart) {
+    cart = new Cart({ items: [] });
+    await cart.save();
+  }
   return cart;
 }
 
 app.get("/api/cart", async (req, res) => {
-  const cart = await getCart();
-  res.json(cart);
+  try {
+    const cart = await getCart();
+    res.json(cart);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch cart" });
+  }
 });
 
 
 // ADD TO CART
-async function addToCart(productId) {
-  let cart = await getCart();
-
-  const item = cart.items.find(i => i.productId === productId);
-
-  if (item) item.quantity += 1;
-  else cart.items.push({ productId, quantity: 1 });
-
-  return await cart.save();
-}
-
 app.post("/api/cart/:productId", async (req, res) => {
-  const cart = await addToCart(req.params.productId);
-  res.json(cart);
+  try {
+    let cart = await getCart();
+    const item = cart.items.find(i => i.productId === req.params.productId);
+
+    if (item) item.quantity += 1;
+    else cart.items.push({ productId: req.params.productId, quantity: 1 });
+
+    const savedCart = await cart.save();
+    res.json(savedCart);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to add to cart" });
+  }
 });
 
 
 // UPDATE CART
-async function updateCart(productId, action) {
-  let cart = await getCart();
-
-  const item = cart.items.find(i => i.productId === productId);
-
-  if (action === "increment") item.quantity++;
-  if (action === "decrement") item.quantity--;
-
-  return await cart.save();
-}
-
 app.put("/api/cart/:productId", async (req, res) => {
-  const cart = await updateCart(req.params.productId, req.body.action);
-  res.json(cart);
+  try {
+    let cart = await getCart();
+    const item = cart.items.find(i => i.productId === req.params.productId);
+
+    if (!item) return res.status(404).json({ error: "Item not in cart" });
+
+    if (req.body.action === "increment") item.quantity++;
+    if (req.body.action === "decrement") item.quantity = Math.max(1, item.quantity - 1);
+
+    const savedCart = await cart.save();
+    res.json(savedCart);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update cart" });
+  }
 });
 
 
 // DELETE FROM CART
-async function deleteFromCart(productId) {
-  let cart = await getCart();
-  cart.items = cart.items.filter(i => i.productId !== productId);
-  return await cart.save();
-}
-
 app.delete("/api/cart/:productId", async (req, res) => {
-  const cart = await deleteFromCart(req.params.productId);
-  res.json(cart);
+  try {
+    let cart = await getCart();
+    cart.items = cart.items.filter(i => i.productId !== req.params.productId);
+    const savedCart = await cart.save();
+    res.json(savedCart);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to remove from cart" });
+  }
 });
 
 
