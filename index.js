@@ -290,6 +290,19 @@ app.delete("/api/cart/:productId", async (req, res) => {
 });
 
 
+// CLEAR CART
+app.delete("/api/cart", async (req, res) => {
+  try {
+    let cart = await getCart();
+    cart.items = [];
+    const savedCart = await cart.save();
+    res.json(savedCart);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to clear cart" });
+  }
+});
+
+
 // ===================== ADDRESS =====================
 
 async function createAddress(data) {
