@@ -98,6 +98,21 @@ app.delete("/api/products/:productId", async (req, res) => {
   }
 });
 
+
+// UPDATE PRODUCT
+app.put("/api/products/:productId", async (req, res) => {
+  try {
+    const updated = await Product.findByIdAndUpdate(req.params.productId, req.body, { new: true });
+    if (updated) {
+      res.json({ message: "Product updated successfully", product: updated });
+    } else {
+      res.status(404).json({ error: "Product not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update product" });
+  }
+});
+
 // GET PRODUCTS BY CATEGORY
 async function readProductsByCategory(category) {
   return await Product.find({ category: category });
