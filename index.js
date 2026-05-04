@@ -84,6 +84,20 @@ app.get("/api/products/:productId", async (req, res) => {
 });
 
 
+// DELETE PRODUCT
+app.delete("/api/products/:productId", async (req, res) => {
+  try {
+    const deleted = await Product.findByIdAndDelete(req.params.productId);
+    if (deleted) {
+      res.json({ message: "Product deleted successfully" });
+    } else {
+      res.status(404).json({ error: "Product not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete product" });
+  }
+});
+
 // GET PRODUCTS BY CATEGORY
 async function readProductsByCategory(category) {
   return await Product.find({ category: category });
