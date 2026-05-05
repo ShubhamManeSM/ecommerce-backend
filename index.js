@@ -13,7 +13,7 @@ const Address = require("./models/address.model");
 const Order = require("./models/order.model");
 
 const corsOption = {
-  origin: "*",
+  origin: true,
   credentials: true,
 };
 
