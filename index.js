@@ -324,6 +324,26 @@ app.get("/api/address", async (req, res) => {
   res.json(addresses);
 });
 
+app.delete("/api/address/:id", async (req, res) => {
+  try {
+    const result = await Address.findByIdAndDelete(req.params.id);
+    if (!result) return res.status(404).json({ error: "Address not found" });
+    res.json({ message: "Address deleted" });
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.put("/api/address/:id", async (req, res) => {
+  try {
+    const result = await Address.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!result) return res.status(404).json({ error: "Address not found" });
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 // ===================== ORDERS =====================
 

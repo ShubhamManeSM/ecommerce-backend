@@ -9,6 +9,6 @@ const orderSchema = new mongoose.Schema({
     type: String,
     default: "Placed",
   },
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("Order", orderSchema);
