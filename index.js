@@ -281,7 +281,8 @@ app.put("/api/cart/:productId", async (req, res) => {
 app.delete("/api/cart/:productId", async (req, res) => {
   try {
     let cart = await getCart();
-    cart.items = cart.items.filter(i => i.productId !== req.params.productId);
+    cart.items = cart.items.filter(i => String(i.productId) !== String(req.params.productId));
+    cart.markModified("items");
     const savedCart = await cart.save();
     res.json(savedCart);
   } catch (error) {
